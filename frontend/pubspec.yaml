@@ -1,0 +1,33 @@
+name: switch_bot_frontend
+description: Frontend application for the Websocket-based SwitchBot.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=2.18.2 <3.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  socket_io_client: ^2.0.0
+  web_socket_channel: ^2.2.0
+  json_serializable: ^6.5.4
+  json_annotation: ^4.8.1
+  flutter_spinbox: ^0.13.1
+  shared_preferences: ^2.0.15
+  logging: ^1.1.0
+  collection: ^1.17.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  build_runner: ^2.3.2
+  mockito: ^5.3.2
+
+flutter:
+  assets:
+    - assets/joycon_icons/outline/
+    - assets/joycon_icons/solid/
+  uses-material-design: true
