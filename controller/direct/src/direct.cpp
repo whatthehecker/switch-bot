@@ -1,35 +1,12 @@
 #include <Arduino.h>
 #include <SwitchJoystick.h>
+#include "button_constants.h"
+#include "command_constants.h"
 
 #define Backend Serial1
 #define Switch Serial
 
 SwitchJoystick_ joystick;
-
-#define Y 0
-#define B 1
-#define A 2
-#define X 3
-#define L 4
-#define R 5
-#define Z_L 6
-#define Z_R 7
-#define MINUS 8
-#define PLUS 9
-#define LSTICK 10
-#define RSTICK 11
-#define HOME 12
-#define CAPTURE 13
-
-#define D_PAD_PREFIX 'D'
-#define D_PAD_LEFT 'L'
-#define D_PAD_RIGHT 'R'
-#define D_PAD_DOWN 'D'
-#define D_PAD_UP 'U'
-
-#define STICK_PREFIX 'S'
-#define L_STICK_PREFIX 'L'
-#define R_STICK_PREFIX 'R'
 
 #define STATUS_LED_PIN 9
 
