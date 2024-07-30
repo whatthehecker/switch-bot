@@ -1,4 +1,8 @@
+#include <Arduino.h>
 #include <SwitchJoystick.h>
+
+#define Backend Serial1
+#define Switch Serial
 
 SwitchJoystick_ joystick;
 
@@ -43,11 +47,11 @@ void setup() {
   pinMode(STATUS_LED_PIN, OUTPUT);
   digitalWrite(STATUS_LED_PIN, LOW);
   
-  Serial.begin(9600);
-  Serial1.begin(9600);
+  Switch.begin(9600);
+  Backend.begin(9600);
 
   // Spinlock until incoming interface is ready.
-  while(!Serial1);
+  while(!Backend);
 
   // Setup JoyCon
   joystick.begin();
@@ -58,7 +62,7 @@ void setup() {
   set_right_stick(128, 128);
 
   digitalWrite(STATUS_LED_PIN, HIGH);
-  Serial1.println("Switch controller ready!");
+  Backend.println("Switch controller ready!");
 }
 
 void handle_d_pad(int directionByte) {
@@ -84,45 +88,45 @@ void handle_d_pad(int directionByte) {
       joystick.setHatSwitch(-1);
       break;
     default:
-      Serial1.print("Unknown D-Pad direction: ");
-      Serial1.println(directionByte);
+      Backend.print("Unknown D-Pad direction: ");
+      Backend.println(directionByte);
       break;
   }
 }
 
 void loop() {
-  Serial1.println("Entering loop");
-  if(Serial1.available() > 0) {
-    int inByte = Serial1.read();
+  Backend.println("Entering loop");
+  if(Backend.available() > 0) {
+    int inByte = Backend.read();
 
     // Ignore newlines and line feeds
     if(inByte == '\n' || inByte == 10) {
       return;
     }
 
-    Serial1.print("Received command: ");
-    Serial1.println(inByte);
+    Backend.print("Received command: ");
+    Backend.println(inByte);
 
     // Handle d-pad differently than buttons
     if(inByte == D_PAD_PREFIX) {
-      while(!Serial1.available());
+      while(!Backend.available());
       
-      int directionByte = Serial1.read();
+      int directionByte = Backend.read();
       handle_d_pad(directionByte);
       return;
     }
     if(inByte == STICK_PREFIX) {
-      while(!Serial1.available());
+      while(!Backend.available());
 
-      int stickIdentifierByte = Serial1.read();
+      int stickIdentifierByte = Backend.read();
       if(stickIdentifierByte != L_STICK_PREFIX && stickIdentifierByte != R_STICK_PREFIX) {
-        Serial1.print("Unknown stick identifier: ");
-        Serial1.println(stickIdentifierByte);
+        Backend.print("Unknown stick identifier: ");
+        Backend.println(stickIdentifierByte);
       }
       else {
-        while(Serial1.available() < 2);
-        byte firstDirection = Serial1.read();
-        byte secondDirection = Serial1.read();
+        while(Backend.available() < 2);
+        byte firstDirection = Backend.read();
+        byte secondDirection = Backend.read();
 
         if(stickIdentifierByte == L_STICK_PREFIX) {
           set_left_stick(firstDirection, secondDirection);
@@ -186,9 +190,9 @@ void loop() {
         break;
       case 'Z':
         {
-          while(!Serial1.available());
+          while(!Backend.available());
           
-          int directionByte = Serial1.read();
+          int directionByte = Backend.read();
           if(directionByte == 'L') {
             joystick.pressButton(Z_L);
             delay(50);
@@ -200,13 +204,14 @@ void loop() {
             joystick.releaseButton(Z_R);
           }
           else {
-            Serial1.print("Unknown Z suffix: ");
-            Serial1.println(directionByte);
+            Backend.print("Unknown Z suffix: ");
+            Backend.println(directionByte);
           }
         }
+        break;
       default:
-        Serial1.print("Unknown command: ");
-        Serial1.println(inByte);
+        Backend.print("Unknown command: ");
+        Backend.println(inByte);
         break;
     }
   }
