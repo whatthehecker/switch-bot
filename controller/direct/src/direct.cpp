@@ -6,190 +6,329 @@
 #define Backend Serial1
 #define Switch Serial
 
+const int STATUS_LED_PIN = 9;
+
 SwitchJoystick_ joystick;
 
-#define STATUS_LED_PIN 9
+const char COMMAND_SEPARATOR = '\n';
+const int MAX_COMMAND_LENGTH = 32;
+char commandBuffer[MAX_COMMAND_LENGTH];
 
-void set_left_stick(byte x, byte y) {
+// The in milliseconds between holding down and releasing a button again when simulating a press.
+const unsigned int PRESS_DELAY_TIME = 50;
+
+void doPressCommand(char *);
+void doHoldCommand(char *);
+void doReleaseCommand(char *);
+void doStickCommand(char *);
+void setLeftStick(byte, byte);
+void setRightStick(byte, byte);
+
+void setLeftStick(byte x, byte y)
+{
   joystick.setXAxis(x);
   joystick.setYAxis(y);
 }
 
-void set_right_stick(byte z, byte rz) {
+void setRightStick(byte z, byte rz)
+{
   joystick.setZAxis(z);
   joystick.setRzAxis(rz);
 }
 
-void setup() {
+void setup()
+{
   pinMode(STATUS_LED_PIN, OUTPUT);
   digitalWrite(STATUS_LED_PIN, LOW);
-  
+
   Switch.begin(9600);
   Backend.begin(9600);
 
   // Spinlock until incoming interface is ready.
-  while(!Backend);
+  while (!Backend)
+    ;
 
   // Setup JoyCon
   joystick.begin();
 
   joystick.setHatSwitch(-1);
   // 0 = left/up, 128 = neutral, 255 = right/down
-  set_left_stick(128, 128);
-  set_right_stick(128, 128);
+  setLeftStick(128, 128);
+  setRightStick(128, 128);
 
   digitalWrite(STATUS_LED_PIN, HIGH);
   Backend.println("Switch controller ready!");
 }
 
-void handle_d_pad(int directionByte) {
-  switch(directionByte) {
-    case D_PAD_LEFT:
-      joystick.setHatSwitch(270);
-      delay(50);
-      joystick.setHatSwitch(-1);
-      break;
-    case D_PAD_RIGHT:
-      joystick.setHatSwitch(90);
-      delay(50);
-      joystick.setHatSwitch(-1);
-      break;
-    case D_PAD_DOWN:
-      joystick.setHatSwitch(180);
-      delay(50);
-      joystick.setHatSwitch(-1);
-      break;
-    case D_PAD_UP:
-      joystick.setHatSwitch(0);
-      delay(50);
-      joystick.setHatSwitch(-1);
-      break;
-    default:
-      Backend.print("Unknown D-Pad direction: ");
-      Backend.println(directionByte);
-      break;
+void handle_d_pad(int directionByte)
+{
+  switch (directionByte)
+  {
+  case D_PAD_LEFT:
+    joystick.setHatSwitch(270);
+    delay(50);
+    joystick.setHatSwitch(-1);
+    break;
+  case D_PAD_RIGHT:
+    joystick.setHatSwitch(90);
+    delay(50);
+    joystick.setHatSwitch(-1);
+    break;
+  case D_PAD_DOWN:
+    joystick.setHatSwitch(180);
+    delay(50);
+    joystick.setHatSwitch(-1);
+    break;
+  case D_PAD_UP:
+    joystick.setHatSwitch(0);
+    delay(50);
+    joystick.setHatSwitch(-1);
+    break;
+  default:
+    Backend.print("Unknown D-Pad direction: ");
+    Backend.println(directionByte);
+    break;
   }
 }
 
-void loop() {
+void executeStoredCommand()
+{
+  char prefix = commandBuffer[0];
+  switch (prefix)
+  {
+  case 'P':
+    doPressCommand(&commandBuffer[1]);
+    break;
+  case 'H':
+    doHoldCommand(&commandBuffer[1]);
+    break;
+  case 'R':
+    doReleaseCommand(&commandBuffer[1]);
+    break;
+  case 'S':
+    doStickCommand(&commandBuffer[1]);
+    break;
+  default:
+    // Invalid command prefix, ignore.
+    return;
+  }
+}
+
+// TODO: rename all of these to "tap" instead of "press"? But then the test command also has to change because that would interfere with the "tap" prefix.
+void doPressCommand(char *command)
+{
+  doHoldCommand(&command[0]);
+  delay(PRESS_DELAY_TIME);
+  doReleaseCommand(&command[0]);
+}
+
+void doHoldCommand(char *command)
+{
+  char buttonNameOrPrefix = command[0];
+  switch (buttonNameOrPrefix)
+  {
+  case 'A':
+    joystick.pressButton(A);
+    break;
+  case 'B':
+    joystick.pressButton(B);
+    break;
+  case 'X':
+    joystick.pressButton(X);
+    break;
+  case 'Y': 
+    joystick.pressButton(Y);
+    break;
+  case 'L':
+    joystick.pressButton(L);
+    break;
+  case 'R':
+    joystick.pressButton(R);
+    break;
+  case 'Z':
+  {
+    char side = command[1];
+    if (side == 'L')
+    {
+      joystick.pressButton(Z_L);
+    }
+    else if (side == 'R')
+    {
+      joystick.pressButton(Z_R);
+    }
+  }
+  break;
+  case 'M':
+    joystick.pressButton(MINUS);
+    break;
+  case 'P':
+    joystick.pressButton(PLUS);
+    break;
+  case 'H':
+    joystick.pressButton(HOME);
+    break;
+  case 'C':
+    joystick.pressButton(CAPTURE);
+    break;
+  case 'D':
+  {
+    char direction = command[1];
+    switch (direction)
+    {
+    case 'L':
+      joystick.setHatSwitch(270);
+      break;
+    case 'R':
+      joystick.setHatSwitch(90);
+      break;
+    case 'U':
+      joystick.setHatSwitch(0);
+      break;
+    case 'D':
+      joystick.setHatSwitch(180);
+      break;
+    }
+  }
+  }
+}
+
+void doReleaseCommand(char *command)
+{
+  char buttonNameOrPrefix = command[0];
+  switch (buttonNameOrPrefix)
+  {
+  case 'A':
+    joystick.releaseButton(A);
+    break;
+  case 'B':
+    joystick.releaseButton(B);
+    break;
+  case 'X':
+    joystick.releaseButton(X);
+    break;
+  case 'Y': 
+    joystick.releaseButton(Y);
+    break;
+  case 'L':
+    joystick.releaseButton(L);
+    break;
+  case 'R':
+    joystick.releaseButton(R);
+    break;
+  case 'Z':
+  {
+    char side = command[1];
+    if (side == 'L')
+    {
+      joystick.releaseButton(Z_L);
+    }
+    else if (side == 'R')
+    {
+      joystick.releaseButton(Z_R);
+    }
+  }
+  break;
+  case 'M':
+    joystick.releaseButton(MINUS);
+    break;
+  case 'P':
+    joystick.releaseButton(PLUS);
+    break;
+  case 'H':
+    joystick.releaseButton(HOME);
+    break;
+  case 'C':
+    joystick.releaseButton(CAPTURE);
+    break;
+  case 'D':
+  {
+    char direction = command[1];
+    switch (direction)
+    {
+    case 'L':
+    case 'R':
+    case 'U':
+    case 'D':
+      joystick.setHatSwitch(-1);
+      break;
+    }
+  }
+  }
+}
+
+void doStickCommand(char *command)
+{
+  char side = command[0];
+  // Invalid side, ignore.
+  if (side != 'L' && side != 'R') {
+    return;
+  }
+
+  char *xAxisToken = strtok(command, ",");
+  char *endOfToken;
+  double x = strtod(&command[1], &endOfToken);
+  // Check whether separator between values is a comma and ignore rest of invalid command if it is not.
+  if(*endOfToken != ',') {
+    return;
+  }
+
+  double y = strtod(endOfToken, &endOfToken);
+  // Check whether the second number marks the end of the command by being followed by a null byte.
+  if(*endOfToken != '\0') {
+    return;
+  }
+
+  // Ignore values outside of [-1.0, 1.0].
+  if(abs(x) > 1.0 || abs(y) > 1.0) {
+    return;
+  }
+
+  // The conversion is a bit weird:
+  // 0 is left, 127 is neutral, 255 is right (so 128 is apparently already a bit right).
+  // If we multiplied by 128 instead of 127 we could end up with negative values for x = -1.0 which would overflow,
+  // if we offset by 128 instead of 127 we cannot go all the way to the left since we can get 128 - 127 = 1 at most.
+  // Since the second case isn't as bad we do that.
+  byte xByte = 128 + x * 127;
+  byte yByte = 128 + y * 127;
+
+  if(side == 'L') {
+    setLeftStick(xByte, yByte);
+  }
+  // We can just use else because anything other than these 2 values should have been caught earlier already.
+  else {
+    setRightStick(xByte, yByte);
+  }
+}
+
+void clearStoredCommand()
+{
+  memset(commandBuffer, 0, sizeof(commandBuffer));
+}
+
+void loop()
+{
   Backend.println("Entering loop");
-  if(Backend.available() > 0) {
-    int inByte = Backend.read();
 
-    // Ignore newlines and line feeds
-    if(inByte == '\n' || inByte == 10) {
+  size_t i = 0;
+  while (Backend.available() > 0)
+  {
+    char receivedChar = Serial.read();
+    // If the command is invalid because it is too long, ignore it.
+    if (i >= MAX_COMMAND_LENGTH - 1)
+    {
+      clearStoredCommand();
       return;
     }
 
-    Backend.print("Received command: ");
-    Backend.println(inByte);
-
-    // Handle d-pad differently than buttons
-    if(inByte == D_PAD_PREFIX) {
-      while(!Backend.available());
-      
-      int directionByte = Backend.read();
-      handle_d_pad(directionByte);
-      return;
+    if (receivedChar == COMMAND_SEPARATOR)
+    {
+      commandBuffer[i++] = '\0';
+      executeStoredCommand();
+      clearStoredCommand();
     }
-    if(inByte == STICK_PREFIX) {
-      while(!Backend.available());
-
-      int stickIdentifierByte = Backend.read();
-      if(stickIdentifierByte != L_STICK_PREFIX && stickIdentifierByte != R_STICK_PREFIX) {
-        Backend.print("Unknown stick identifier: ");
-        Backend.println(stickIdentifierByte);
-      }
-      else {
-        while(Backend.available() < 2);
-        byte firstDirection = Backend.read();
-        byte secondDirection = Backend.read();
-
-        if(stickIdentifierByte == L_STICK_PREFIX) {
-          set_left_stick(firstDirection, secondDirection);
-        }
-        else if(stickIdentifierByte == R_STICK_PREFIX) {
-          set_right_stick(firstDirection, secondDirection);
-        }
-      }
-    }
-    
-    switch(inByte) {
-      case 'Y':
-        joystick.pressButton(Y);
-        delay(50);
-        joystick.releaseButton(Y);
-        break;
-      case 'X':
-        joystick.pressButton(X);
-        delay(50);
-        joystick.releaseButton(X);
-        break;
-      case 'A':
-        joystick.pressButton(A);
-        delay(50);
-        joystick.releaseButton(A);
-        break;
-      case 'B':
-        joystick.pressButton(B);
-        delay(50);
-        joystick.releaseButton(B);
-        break;
-      case 'H':
-        joystick.pressButton(HOME);
-        delay(50);
-        joystick.releaseButton(HOME);
-        break;
-      case 'M':
-        joystick.pressButton(MINUS);
-        delay(50);
-        joystick.releaseButton(MINUS);
-        break;
-      case 'P':
-        joystick.pressButton(PLUS);
-        delay(50);
-        joystick.releaseButton(PLUS);
-        break;
-      case 'R':
-        joystick.pressButton(R);
-        delay(50);
-        joystick.releaseButton(R);
-        break;
-      case 'L':
-        joystick.pressButton(L);
-        delay(50);
-        joystick.releaseButton(L);
-        break;
-      case 'C':
-        joystick.pressButton(CAPTURE);
-        delay(50);
-        joystick.releaseButton(CAPTURE);
-        break;
-      case 'Z':
-        {
-          while(!Backend.available());
-          
-          int directionByte = Backend.read();
-          if(directionByte == 'L') {
-            joystick.pressButton(Z_L);
-            delay(50);
-            joystick.releaseButton(Z_L);
-          }
-          else if(directionByte == 'R') {
-            joystick.pressButton(Z_R);
-            delay(50);
-            joystick.releaseButton(Z_R);
-          }
-          else {
-            Backend.print("Unknown Z suffix: ");
-            Backend.println(directionByte);
-          }
-        }
-        break;
-      default:
-        Backend.print("Unknown command: ");
-        Backend.println(inByte);
-        break;
+    else
+    {
+      commandBuffer[i++] = receivedChar;
     }
   }
 }
