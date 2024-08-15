@@ -10,7 +10,7 @@ The controller executes each command immediately when it receives a full line of
 A command may only contain the data it is supposed to have. If there's any trailing data before the newline or the command is not one of the commands defined below, it is invalid. Invalid commands are silently discarded.
 
 ## Command prefixes
-- P: Press button. Holds and then shortly after releases a button again, similar to when you manually press a button.
+- T: Tap button. Holds and then shortly after releases a button again, similar to when you manually tap a button.
 - H: Hold button down. Only allowed for buttons and triggers which can be held down.
 - R: Release held button. Only allowed for buttons and triggers which can be held down.
 - S: Stick input. Followed by the name of the joystick and two decimal numbers (separated by a comma) describing the movement of the stick on the X and Y axis.
@@ -42,7 +42,7 @@ The following strings can be used to refer to the joysticks:
   - R: Right joystick
 
 ## Special commands
-- `T`: Test the connection. If received by the controller, it prints `SwitchBot version XXX` where `XXX` is a version identifier. Use this command to check whether everything is working correctly.
+- `V`: Test the connection. If received by the controller, it prints `SwitchBot controller version XXX` where `XXX` is a version identifier. Use this command to check whether everything is working correctly.
 
 ## Command examples
 - `HA`: Start holding down the A button. Does nothing if A was already held.
@@ -50,4 +50,4 @@ The following strings can be used to refer to the joysticks:
 - `SL-1,0.5`: Move the left stick all the way to the left horizontally and up halfway.
 - `SR0,0`: Move the left stick to the neutral center position.
 - `HDU`: Start holding down on the D-Pad.
-- `PH`: Press the Home button by holding it down and then releasing it again shortly after.
+- `TH`: Tap the Home button by holding it down and then releasing it again shortly after.

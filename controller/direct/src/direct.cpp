@@ -17,12 +17,15 @@ char commandBuffer[MAX_COMMAND_LENGTH];
 // The in milliseconds between holding down and releasing a button again when simulating a press.
 const unsigned int PRESS_DELAY_TIME = 50;
 
-void doPressCommand(char *);
+void doTapCommand(char *);
 void doHoldCommand(char *);
 void doReleaseCommand(char *);
 void doStickCommand(char *);
+void printVersion();
 void setLeftStick(byte, byte);
 void setRightStick(byte, byte);
+void executeStoredCommand();
+void clearStoredCommand();
 
 void setLeftStick(byte x, byte y)
 {
@@ -44,15 +47,15 @@ void setup()
   Switch.begin(9600);
   Backend.begin(9600);
 
-  // Spinlock until incoming interface is ready.
+  // Spinlock until incoming serial interface is ready.
   while (!Backend)
     ;
 
   // Setup JoyCon
   joystick.begin();
 
+  // Move D-Pad and joysticks to neutral positions.
   joystick.setHatSwitch(-1);
-  // 0 = left/up, 128 = neutral, 255 = right/down
   setLeftStick(128, 128);
   setRightStick(128, 128);
 
@@ -60,44 +63,13 @@ void setup()
   Backend.println("Switch controller ready!");
 }
 
-void handle_d_pad(int directionByte)
-{
-  switch (directionByte)
-  {
-  case D_PAD_LEFT:
-    joystick.setHatSwitch(270);
-    delay(50);
-    joystick.setHatSwitch(-1);
-    break;
-  case D_PAD_RIGHT:
-    joystick.setHatSwitch(90);
-    delay(50);
-    joystick.setHatSwitch(-1);
-    break;
-  case D_PAD_DOWN:
-    joystick.setHatSwitch(180);
-    delay(50);
-    joystick.setHatSwitch(-1);
-    break;
-  case D_PAD_UP:
-    joystick.setHatSwitch(0);
-    delay(50);
-    joystick.setHatSwitch(-1);
-    break;
-  default:
-    Backend.print("Unknown D-Pad direction: ");
-    Backend.println(directionByte);
-    break;
-  }
-}
-
 void executeStoredCommand()
 {
   char prefix = commandBuffer[0];
   switch (prefix)
   {
-  case 'P':
-    doPressCommand(&commandBuffer[1]);
+  case 'T':
+    doTapCommand(&commandBuffer[1]);
     break;
   case 'H':
     doHoldCommand(&commandBuffer[1]);
@@ -108,14 +80,21 @@ void executeStoredCommand()
   case 'S':
     doStickCommand(&commandBuffer[1]);
     break;
+  case 'V':
+    printVersion();
+    break;
   default:
     // Invalid command prefix, ignore.
     return;
   }
 }
 
-// TODO: rename all of these to "tap" instead of "press"? But then the test command also has to change because that would interfere with the "tap" prefix.
-void doPressCommand(char *command)
+void printVersion()
+{
+  Backend.print("SwitchBot controller version 1");
+}
+
+void doTapCommand(char *command)
 {
   doHoldCommand(&command[0]);
   delay(PRESS_DELAY_TIME);
@@ -136,7 +115,7 @@ void doHoldCommand(char *command)
   case 'X':
     joystick.pressButton(X);
     break;
-  case 'Y': 
+  case 'Y':
     joystick.pressButton(Y);
     break;
   case 'L':
@@ -206,7 +185,7 @@ void doReleaseCommand(char *command)
   case 'X':
     joystick.releaseButton(X);
     break;
-  case 'Y': 
+  case 'Y':
     joystick.releaseButton(Y);
     break;
   case 'L':
@@ -260,7 +239,8 @@ void doStickCommand(char *command)
 {
   char side = command[0];
   // Invalid side, ignore.
-  if (side != 'L' && side != 'R') {
+  if (side != 'L' && side != 'R')
+  {
     return;
   }
 
@@ -268,18 +248,21 @@ void doStickCommand(char *command)
   char *endOfToken;
   double x = strtod(&command[1], &endOfToken);
   // Check whether separator between values is a comma and ignore rest of invalid command if it is not.
-  if(*endOfToken != ',') {
+  if (*endOfToken != ',')
+  {
     return;
   }
 
   double y = strtod(endOfToken, &endOfToken);
   // Check whether the second number marks the end of the command by being followed by a null byte.
-  if(*endOfToken != '\0') {
+  if (*endOfToken != '\0')
+  {
     return;
   }
 
   // Ignore values outside of [-1.0, 1.0].
-  if(abs(x) > 1.0 || abs(y) > 1.0) {
+  if (abs(x) > 1.0 || abs(y) > 1.0)
+  {
     return;
   }
 
@@ -291,11 +274,13 @@ void doStickCommand(char *command)
   byte xByte = 128 + x * 127;
   byte yByte = 128 + y * 127;
 
-  if(side == 'L') {
+  if (side == 'L')
+  {
     setLeftStick(xByte, yByte);
   }
   // We can just use else because anything other than these 2 values should have been caught earlier already.
-  else {
+  else
+  {
     setRightStick(xByte, yByte);
   }
 }
