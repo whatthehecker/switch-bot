@@ -1,7 +1,5 @@
-#include <Arduino.h>
+#include "Arduino.h"
 #include <SwitchJoystick.h>
-#include "button_constants.h"
-#include "command_constants.h"
 #include "command_executor.h"
 
 #define Backend Serial1
@@ -28,7 +26,8 @@ void setup()
   Backend.begin(9600);
 
   // Spinlock until incoming serial interface is ready.
-  while (!Backend);
+  while (!Backend)
+    ;
 
   executor = new CommandExecutor(joystick, Backend);
 
