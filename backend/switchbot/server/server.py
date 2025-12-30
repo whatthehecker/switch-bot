@@ -122,6 +122,14 @@ class Server:
 
     async def emit_frames(self):
         logger.debug('Starting to emit frames...')
+
+        if self.bot.video.capture is None:
+            logger.warning('Could not start emitting frames as capture is None!')
+            return
+        elif not self.bot.video.capture.isOpened():
+            logger.warning('Could not start emitting frames as capture is not open!')
+            return
+
         while self.bot.video.capture is not None and self.bot.video.capture.isOpened():
             success, frame = self.bot.video.capture.read()
             if not success:
