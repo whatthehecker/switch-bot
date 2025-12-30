@@ -2,8 +2,10 @@
 #include <SwitchJoystick.h>
 #include "command_executor.h"
 
-#define Backend Serial1
-#define Switch Serial
+// The Serial port that is connected to the host computer, being connected through a USB-to-UART converter cable.
+#define BackendSerial Serial1
+// The Serial port that acts as a USB controller and is connected to the Nintendo Switch, being the Pro Micro's USB port.
+#define SwitchSerial Serial
 
 const int STATUS_LED_PIN = 9;
 
@@ -22,14 +24,10 @@ void setup()
   pinMode(STATUS_LED_PIN, OUTPUT);
   digitalWrite(STATUS_LED_PIN, LOW);
 
-  Switch.begin(9600);
-  Backend.begin(9600);
+  SwitchSerial.begin(115200);
+  BackendSerial.begin(9600);
 
-  // Spinlock until incoming serial interface is ready.
-  while (!Backend)
-    ;
-
-  executor = new CommandExecutor(joystick, Backend);
+  executor = new CommandExecutor(joystick, BackendSerial);
 
   digitalWrite(STATUS_LED_PIN, HIGH);
 }
@@ -42,7 +40,7 @@ void clearStoredCommand()
 void loop()
 {
   size_t i = 0;
-  while (Backend.available() > 0)
+  while (BackendSerial.available() > 0)
   {
     char receivedChar = Serial.read();
     // If the command is invalid because it is too long, ignore it.

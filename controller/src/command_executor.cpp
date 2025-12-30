@@ -1,15 +1,15 @@
 #include "command_executor.h"
 #include "button_constants.h"
 
-bool CommandExecutor::doTapCommand(const char *buffer)
+bool CommandExecutor::doTapCommand(const char* buffer)
 {
     bool holdSuccessful = doHoldCommand(&buffer[0]);
-    delay(PRESS_DELAY_TIME);
+    delay(PRESS_DELAY_MILLIS);
     bool releaseSuccessful = doReleaseCommand(&buffer[0]);
     return holdSuccessful && releaseSuccessful;
 }
 
-bool CommandExecutor::doHoldCommand(const char *command)
+bool CommandExecutor::doHoldCommand(const char* command)
 {
     char buttonNameOrPrefix = command[0];
     switch (buttonNameOrPrefix)
@@ -33,20 +33,20 @@ bool CommandExecutor::doHoldCommand(const char *command)
         joystick.pressButton(R);
         return true;
     case 'Z':
-    {
-        char side = command[1];
-        if (side == 'L')
         {
-            joystick.pressButton(Z_L);
-            return true;
+            char side = command[1];
+            if (side == 'L')
+            {
+                joystick.pressButton(Z_L);
+                return true;
+            }
+            else if (side == 'R')
+            {
+                joystick.pressButton(Z_R);
+                return true;
+            }
+            return false;
         }
-        else if (side == 'R')
-        {
-            joystick.pressButton(Z_R);
-            return true;
-        }
-        return false;
-    }
     case 'M':
         joystick.pressButton(MINUS);
         return true;
@@ -60,31 +60,31 @@ bool CommandExecutor::doHoldCommand(const char *command)
         joystick.pressButton(CAPTURE);
         return true;
     case 'D':
-    {
-        char direction = command[1];
-        switch (direction)
         {
-        case 'L':
-            joystick.setHatSwitch(270);
-            return true;
-        case 'R':
-            joystick.setHatSwitch(90);
-            return true;
-        case 'U':
-            joystick.setHatSwitch(0);
-            return true;
-        case 'D':
-            joystick.setHatSwitch(180);
-            return true;
+            char direction = command[1];
+            switch (direction)
+            {
+            case 'L':
+                joystick.setHatSwitch(270);
+                return true;
+            case 'R':
+                joystick.setHatSwitch(90);
+                return true;
+            case 'U':
+                joystick.setHatSwitch(0);
+                return true;
+            case 'D':
+                joystick.setHatSwitch(180);
+                return true;
+            default:
+                return false;
+            }
         }
-        return false;
+    default: return false;
     }
-    }
-
-    return false;
 }
 
-bool CommandExecutor::doReleaseCommand(const char *command)
+bool CommandExecutor::doReleaseCommand(const char* command)
 {
     char buttonNameOrPrefix = command[0];
     switch (buttonNameOrPrefix)
@@ -108,21 +108,20 @@ bool CommandExecutor::doReleaseCommand(const char *command)
         joystick.releaseButton(R);
         return true;
     case 'Z':
-    {
-        char side = command[1];
-        if (side == 'L')
         {
-            joystick.releaseButton(Z_L);
-            return true;
+            char side = command[1];
+            if (side == 'L')
+            {
+                joystick.releaseButton(Z_L);
+                return true;
+            }
+            else if (side == 'R')
+            {
+                joystick.releaseButton(Z_R);
+                return true;
+            }
+            return false;
         }
-        else if (side == 'R')
-        {
-            joystick.releaseButton(Z_R);
-            return true;
-        }
-        return false;
-    }
-    break;
     case 'M':
         joystick.releaseButton(MINUS);
         return true;
@@ -136,26 +135,26 @@ bool CommandExecutor::doReleaseCommand(const char *command)
         joystick.releaseButton(CAPTURE);
         return true;
     case 'D':
-    {
-        char direction = command[1];
-        switch (direction)
         {
-        case 'L':
-        case 'R':
-        case 'U':
-        case 'D':
-            joystick.setHatSwitch(-1);
-            return true;
-        default:
-            return false;
+            char direction = command[1];
+            switch (direction)
+            {
+            case 'L':
+            case 'R':
+            case 'U':
+            case 'D':
+                joystick.setHatSwitch(-1);
+                return true;
+            default:
+                return false;
+            }
         }
+    default:
+        return false;
     }
-    }
-
-    return false;
 }
 
-bool CommandExecutor::doStickCommand(char *command)
+bool CommandExecutor::doStickCommand(const char* command)
 {
     char side = command[0];
     // Invalid side, ignore.
@@ -164,7 +163,7 @@ bool CommandExecutor::doStickCommand(char *command)
         return false;
     }
 
-    char *endOfToken;
+    char* endOfToken;
     double x = strtod(&command[1], &endOfToken);
     // Check whether separator between values is a comma and ignore rest of invalid command if it is not.
     if (*endOfToken != ',')
@@ -205,7 +204,7 @@ bool CommandExecutor::doStickCommand(char *command)
     return true;
 }
 
-void CommandExecutor::printVersion()
+void CommandExecutor::printVersion() const
 {
     backend.println("SwitchBot controller version 1");
 }
@@ -222,7 +221,7 @@ void CommandExecutor::setRightStick(byte z, byte rz)
     joystick.setRzAxis(rz);
 }
 
-CommandExecutor::CommandExecutor(SwitchJoystick_ joystick, HardwareSerial backend)
+CommandExecutor::CommandExecutor(SwitchJoystick_ joystick, HardwareSerial& backend)
     : joystick(joystick), backend(backend)
 {
     joystick.begin();
@@ -232,7 +231,7 @@ CommandExecutor::CommandExecutor(SwitchJoystick_ joystick, HardwareSerial backen
     setRightStick(128, 128);
 }
 
-bool CommandExecutor::executeCommandFromBuffer(char *buffer)
+bool CommandExecutor::executeCommandFromBuffer(const char* buffer)
 {
     char prefix = buffer[0];
     switch (prefix)
