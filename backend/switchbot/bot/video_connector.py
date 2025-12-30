@@ -30,7 +30,7 @@ class VideoConnector:
             self.disconnect()
 
         self.active_camera_descriptor = descriptor
-        self.capture = VideoCapture(descriptor.identifier, cv2.CAP_DSHOW)
+        self.capture = VideoCapture(descriptor.identifier)
         # TODO: raise error or return false if opening the camera fails.
 
     def is_connected(self) -> bool:
