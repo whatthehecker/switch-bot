@@ -4,18 +4,6 @@
 #include <SwitchJoystick.h>
 
 class CommandExecutor {
-private:
-    SwitchJoystick_ joystick;
-    HardwareSerial& backend;
-
-    bool doTapCommand(const char* buffer);
-    bool doHoldCommand(const char* buffer);
-    bool doStickCommand(const char* command);
-    bool doReleaseCommand(const char* command);
-    void printVersion() const;
-    void setLeftStick(byte, byte);
-    void setRightStick(byte, byte);
-
 public:
     CommandExecutor(SwitchJoystick_ joystick, HardwareSerial& backend);
 
@@ -23,5 +11,17 @@ public:
     static const unsigned int PRESS_DELAY_MILLIS = 50;
 
     bool executeCommandFromBuffer(const char* buffer);
+
+private:
+    SwitchJoystick_ joystick;
+    HardwareSerial& backend;
+
+    bool doTapCommand(const char* command);
+    bool doHoldCommand(const char* command);
+    bool doStickCommand(const char* command);
+    bool doReleaseCommand(const char* command);
+    void printVersion() const;
+    void setLeftStick(byte, byte);
+    void setRightStick(byte, byte);
 };
 #endif

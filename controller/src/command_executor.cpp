@@ -3,10 +3,10 @@
 
 bool CommandExecutor::doTapCommand(const char* buffer)
 {
-    bool holdSuccessful = doHoldCommand(&buffer[0]);
+    const bool wasHoldSuccessful = doHoldCommand(&buffer[0]);
     delay(PRESS_DELAY_MILLIS);
-    bool releaseSuccessful = doReleaseCommand(&buffer[0]);
-    return holdSuccessful && releaseSuccessful;
+    const bool wasReleaseSuccessful = doReleaseCommand(&buffer[0]);
+    return wasHoldSuccessful && wasReleaseSuccessful;
 }
 
 bool CommandExecutor::doHoldCommand(const char* command)
@@ -40,7 +40,7 @@ bool CommandExecutor::doHoldCommand(const char* command)
                 joystick.pressButton(Z_L);
                 return true;
             }
-            else if (side == 'R')
+            if (side == 'R')
             {
                 joystick.pressButton(Z_R);
                 return true;
@@ -115,7 +115,7 @@ bool CommandExecutor::doReleaseCommand(const char* command)
                 joystick.releaseButton(Z_L);
                 return true;
             }
-            else if (side == 'R')
+            if (side == 'R')
             {
                 joystick.releaseButton(Z_R);
                 return true;
@@ -178,7 +178,7 @@ bool CommandExecutor::doStickCommand(const char* command)
         return false;
     }
 
-    // Ignore values outside of [-1.0, 1.0].
+    // Ignore values outside [-1.0, 1.0].
     if (abs(x) > 1.0 || abs(y) > 1.0)
     {
         return false;
@@ -189,8 +189,8 @@ bool CommandExecutor::doStickCommand(const char* command)
     // If we multiplied by 128 instead of 127 we could end up with negative values for x = -1.0 which would overflow,
     // if we offset by 128 instead of 127 we cannot go all the way to the left since we can get 128 - 127 = 1 at most.
     // Since the second case isn't as bad we do that.
-    byte xByte = 128 + x * 127;
-    byte yByte = 128 + y * 127;
+    byte xByte = static_cast<byte>(128 + x * 127);
+    byte yByte = static_cast<byte>(128 + y * 127);
 
     if (side == 'L')
     {
