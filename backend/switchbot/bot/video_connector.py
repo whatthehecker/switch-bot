@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 from typing import Union, Optional
 
-import cv2
 import numpy as np
 from cv2 import VideoCapture, error
+from cv2_enumerate_cameras import enumerate_cameras
+# This doesn't get resolved for some reason, but it does exist:
+# noinspection PyUnresolvedReferences
+from cv2.videoio_registry import getBackendName
 from dataclasses_json import dataclass_json
 
 
@@ -57,13 +60,14 @@ class VideoConnector:
             # Rarely throws for some unknown reason, ignore it for now.
             return None
 
-    def list_cameras(self) -> [CameraDescriptor]:
+    # noinspection PyMethodMayBeStatic
+    def list_cameras(self) -> list[CameraDescriptor]:
         """
         Returns a list of descriptors of the available cameras on the system.
 
-        For now this just returns the first 4 available cameras as OpenCV has no functionality for listing cameras by
-        anything other than their index.
-
         :return: A list of camera descriptors
         """
-        return [CameraDescriptor(f'Generic camera {i}', i) for i in range(4)]
+        return [CameraDescriptor(
+            name=f'{camera.name} (Index {camera.index})',
+            identifier=camera.index,
+        ) for camera in enumerate_cameras()]
