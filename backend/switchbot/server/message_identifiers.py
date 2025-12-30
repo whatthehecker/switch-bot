@@ -22,6 +22,7 @@ class MessageIdentifiers:
     GET_RUNNING_PROGRAM_REQUEST = 'get_running_program'
     GET_RUNNING_PROGRAM_RESPONSE = 'current_running_program'
     RELOAD_PROGRAMS = 'reload_programs'
+    # TODO: rename this, there should be separate messages for tapping, holding and releasing!
     PRESS_BUTTON = 'press_button'
     MOVE_JOYSTICK = 'move_joystick'
     DIALOG_CLOSED = 'close_dialog'

@@ -7,8 +7,6 @@ from serial import Serial
 from serial.tools.list_ports import comports
 from serial.tools.list_ports_common import ListPortInfo
 
-from ..bot.command_bytes import *
-
 logger = logging.getLogger('SerialConnector')
 
 
@@ -22,8 +20,14 @@ class SerialConnector:
         self.serial: Optional[Serial] = None
 
     def connect(self, port_identifier: str) -> None:
-        self.serial = Serial(port_identifier, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
-                             stopbits=serial.STOPBITS_ONE, timeout=1)
+        self.serial = Serial(
+            port=port_identifier,
+            baudrate=115200,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+            timeout=1
+        )
         self.port_identifier = port_identifier
         logger.info(f'Connected to port "{self.port_identifier}.')
 
@@ -39,71 +43,66 @@ class SerialConnector:
         self.serial = None
 
     def reconnect(self) -> None:
-        logger.info(f'Reconnecting to port "{self.port_identifier}')
+        logger.info(f'Reconnecting to port "{self.port_identifier}"')
 
         original_port_identifier = self.port_identifier
         self.disconnect()
         self.connect(original_port_identifier)
 
-    def press_a(self) -> None:
-        self.write_command(A)
+    def tap_a(self) -> None:
+        self._write_tap_command('A')
 
-    def press_b(self) -> None:
-        self.write_command(B)
+    def tap_b(self) -> None:
+        self._write_tap_command('B')
 
-    def press_x(self) -> None:
-        self.write_command(X)
+    def tap_x(self) -> None:
+        self._write_tap_command('X')
 
-    def press_y(self) -> None:
-        self.write_command(Y)
+    def tap_y(self) -> None:
+        self._write_tap_command('Y')
 
-    def press_home(self) -> None:
-        self.write_command(HOME)
+    def tap_home(self) -> None:
+        self._write_tap_command('H')
 
-    def press_minus(self) -> None:
-        self.write_command(MINUS)
+    def tap_minus(self) -> None:
+        self._write_tap_command('M')
 
-    def press_plus(self) -> None:
-        self.write_command(PLUS)
+    def tap_plus(self) -> None:
+        self._write_tap_command('P')
 
-    def press_capture(self) -> None:
-        self.write_command(CAPTURE)
+    def tap_capture(self) -> None:
+        self._write_tap_command('C')
 
-    def press_l(self) -> None:
-        self.write_command(L)
+    def tap_l(self) -> None:
+        self._write_tap_command('L')
 
-    def press_r(self) -> None:
-        self.write_command(R)
+    def tap_r(self) -> None:
+        self._write_tap_command('R')
 
-    def press_zl(self) -> None:
-        self.write_command(ZL)
+    def tap_zl(self) -> None:
+        self._write_tap_command('ZL')
 
-    def press_zr(self) -> None:
-        self.write_command(ZR)
+    def tap_zr(self) -> None:
+        self._write_tap_command('ZR')
 
-    def press_left(self) -> None:
-        self.write_command(DPAD_LEFT)
+    def tap_left(self) -> None:
+        self._write_tap_command('DL')
 
-    def press_right(self) -> None:
-        self.write_command(DPAD_RIGHT)
+    def tap_right(self) -> None:
+        self._write_tap_command('DR')
 
-    def press_up(self) -> None:
-        self.write_command(DPAD_UP)
+    def tap_up(self) -> None:
+        self._write_tap_command('DU')
 
-    def press_down(self) -> None:
-        self.write_command(DPAD_DOWN)
+    def tap_down(self) -> None:
+        self._write_tap_command('DD')
 
-    def _set_left_joystick_raw(self, x: int, y: int) -> None:
-        assert (0 <= x <= 255)
-        assert (0 <= y <= 255)
+    def test_connection(self) -> str:
+        self.write_command('V')
+        return self.serial.readline().decode('ascii', errors='strict')
 
-        self.write_command(LEFT_JOYSTICK_PREFIX + x.to_bytes(1) + y.to_bytes(1))
-
-    def _set_right_joystick_raw(self, x: int, y: int) -> None:
-        assert (0 <= x <= 255)
-        assert (0 <= y <= 255)
-
-        self.write_command(RIGHT_JOYSTICK_PREFIX + x.to_bytes(1) + y.to_bytes(1))
+    def _write_tap_command(self, button_name: str) -> None:
+        self.write_command(f'T{button_name}')
 
     def set_left_joystick(self, angle: float, radius: float) -> None:
         """
@@ -113,7 +112,7 @@ class SerialConnector:
         :param radius: The radius of the circle, or how far the joystick is pressed in the given direction.
         """
         x, y, = self._polar_to_cartesian_joystick(angle, radius)
-        self._set_left_joystick_raw(round(x), round(y))
+        self.write_command(f'SL{x:0.2f},{y:0.2f}')
 
     def set_right_joystick(self, angle: float, radius: float) -> None:
         """
@@ -124,11 +123,12 @@ class SerialConnector:
         """
 
         x, y, = self._polar_to_cartesian_joystick(angle, radius)
-        self._set_right_joystick_raw(round(x), round(y))
+        self.write_command(f'SR{x:0.2f},{y:0.2f}')
 
-    def _polar_to_cartesian_joystick(self, angle: float, radius: float) -> (int, int):
+    @staticmethod
+    def _polar_to_cartesian_joystick(angle: float, radius: float) -> tuple[int, int]:
         """
-        Converts from polar coordinates to the joystick-specific cartesion coordinate system where
+        Converts from polar coordinates to the joystick-specific cartesian coordinate system where
         (128, 128) is the neutral center position, (0, 128) is left, (255, 128) is right and so on.
         :param angle: The angle in radians.
         :param radius: The relative radius, meaning that 0 is no movement in the direction angle is pointing
@@ -137,30 +137,25 @@ class SerialConnector:
         """
         assert (0 <= radius <= 1.0)
 
-        x = 128 + cos(angle) * radius * 128
+        x = int(128 + cos(angle) * radius * 128)
         # Inverted Y axis: 1 is down and 1 is up.
-        y = 128 - sin(angle) * radius * 128
+        y = int(128 - sin(angle) * radius * 128)
         # Hack: 128 is neutral and 0 is the minimum, but 256 is not the maximum (255 is) so clamp values >= 256.
         return min(x, 255), min(y, 255)
 
-    def write_command(self, button_bytes: bytes) -> None:
+    def write_command(self, command: str) -> None:
         if not self.is_connected():
             raise Exception('Serial connection was not opened yet')
 
-        if button_bytes not in all_commands and not any(button_bytes.startswith(prefix) for prefix in all_prefixes):
-            raise Exception(f'Unknown button bytes: {button_bytes}')
+        try:
+            command_bytes = command.encode('ascii', errors='strict')
+        except UnicodeEncodeError as err:
+            logger.error(f'Failed to write command "{command}" to serial: {err}')
+            return
 
-        logger.debug(f'Writing bytes "{button_bytes}" to port {self.port_identifier}')
-        self.serial.write(button_bytes)
-        # Terminate each command with a newline.
+        logger.debug(f'Writing bytes "{command_bytes}" to port {self.port_identifier}')
+        self.serial.write(command_bytes)
         self.serial.write(b'\n')
-        response_byte = self.serial.read()
-        if response_byte == RESPONSE_OK:
-            logger.debug('Response was OK')
-        elif response_byte == RESPONSE_ERROR:
-            logger.debug('Response was ERROR')
-        else:
-            logger.debug(f'Unknown response! Was: {response_byte}')
 
     @staticmethod
     def list_serial_ports() -> List[str]:
@@ -168,5 +163,5 @@ class SerialConnector:
         Lists all available serial ports which can be used to connect to the controller's Arduino.
         :return: A list of the names of all available serial ports.
         """
-        port_infos: [ListPortInfo] = comports()
+        port_infos: list[ListPortInfo] = comports()
         return [port_info.device for port_info in port_infos]

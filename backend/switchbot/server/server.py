@@ -16,7 +16,6 @@ from ..bot.switch_bot import SwitchBot
 from ..bot.video_connector import CameraDescriptor
 from ..program.program import Program, ProgramMetadata
 from ..program.program_loader import import_program_from_directory
-from .button_code_mappings import button_code_mappings
 from .message_identifiers import MessageIdentifiers
 from .messages.current_program_message import CurrentProgramMessage
 from .messages.dialog_closed_message import DialogClosedMessage
@@ -31,6 +30,26 @@ handler.setLevel(logging.DEBUG)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
 logger.addHandler(handler)
+
+# Maps from the names buttons use inside a "Press button" message to button name internally used by the serial protocol.
+MESSAGE_BUTTON_TO_BUTTON_NAME = {
+    'A': 'A',
+    'B': 'B',
+    'X': 'X',
+    'Y': 'Y',
+    'Home': 'H',
+    'Minus': 'M',
+    'Plus': 'P',
+    'Capture': 'C',
+    'L': 'L',
+    'R': 'R',
+    'ZL': 'ZL',
+    'ZR': 'ZR',
+    'Left': 'DL',
+    'Right': 'DR',
+    'Up': 'DU',
+    'Down': 'DD',
+}
 
 
 class Server:
@@ -221,13 +240,13 @@ class Server:
         self.program_instance = None
         await self.emit_current_program()
 
-    def press_button(self, _sid, button_name: str):
-        button_bytes: Optional[bytes] = button_code_mappings.get(button_name, None)
-        if button_bytes is None:
+    def press_button(self, _sid, message_button_name: str):
+        serial_button_name: Optional[str] = MESSAGE_BUTTON_TO_BUTTON_NAME.get(message_button_name, None)
+        if serial_button_name is None:
             # todo: respond with error
             pass
         # todo: handle exceptions and relay them in a message to the caller
-        self.bot.serial.write_command(button_bytes)
+        self.bot.serial.write_command(f'T{serial_button_name}')
 
     def move_joystick(self, _sid, data: Dict[str, object]):
         joystick: str = cast(str, data['joystick'])

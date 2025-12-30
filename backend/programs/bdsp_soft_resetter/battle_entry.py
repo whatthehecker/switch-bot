@@ -17,13 +17,13 @@ class BattleEntry:
                      animation_timeout: float) -> BattleEntryDelegate:
         async def do_entry(switch_bot: SwitchBot) -> None:
             for _ in range(steps):
-                switch_bot.serial.press_up()
+                switch_bot.serial.tap_up()
                 # TODO: fine-tune these timeouts
                 await sleep(0.5)
             await sleep(1.5)
-            switch_bot.serial.press_a()
+            switch_bot.serial.tap_a()
             await sleep(pre_battle_animation_timeout)
-            switch_bot.serial.press_a()
+            switch_bot.serial.tap_a()
             await sleep(animation_timeout)
 
         return do_entry
@@ -34,11 +34,11 @@ class BattleEntry:
             # Press A to start the pre-battle animation which results in a textbox with the Pokémon's
             # scream being displayed.
             print('Opening encounter text box...')
-            switch_bot.serial.press_a()
+            switch_bot.serial.tap_a()
             await sleep(pre_battle_animation_timeout)
             print('Closing encounter text box...')
             # Press A to close the textbox and play the animation of entering the battle.
-            switch_bot.serial.press_a()
+            switch_bot.serial.tap_a()
             await sleep(animation_timeout)
 
         return do_entry
