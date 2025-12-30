@@ -176,7 +176,10 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
             children: [
               TextButton.icon(
                 onPressed: () {
-                  widget.socket.emit(MessageIdentifiers.disconnectSerial);
+                  setState(() {
+                    _currentPort = null;
+                    widget.socket.emit(MessageIdentifiers.disconnectSerial);
+                  });
                 },
                 icon: const Icon(Icons.close),
                 label: const Text('Disconnect'),
