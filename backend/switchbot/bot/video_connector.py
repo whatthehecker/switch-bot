@@ -23,7 +23,7 @@ class VideoConnector:
 
     def __init__(self):
         self.active_camera_descriptor: Optional[CameraDescriptor] = None
-        self.capture: Union[VideoCapture, None] = None
+        self.capture: Optional[VideoCapture] = None
 
     def connect(self, descriptor: CameraDescriptor) -> None:
         if self.is_connected():
