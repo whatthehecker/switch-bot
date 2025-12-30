@@ -4,7 +4,7 @@ It defines commands to control which buttons are to be pressed and how other par
 
 ## Command structure
 Commands are sent in plain-text over serial to the controller.
-The used baud rate is 115200, the error correction scheme is TODO (Stopbits and stuff).
+The used baud rate is 115200, the configuration is Arduino's default of 8N1.
 Commands are separated by newline characters (`\n`).
 The controller executes each command immediately when it receives a full line of text and does not send any acknowledgement (for now). This is done so that no time is wasted waiting for acknowledgement which takes too long in cases where a complex series of commands has to be executed in a quick succession (imagine rotating one of the joysticks evenly to walk a circle in a game).
 A command may only contain the data it is supposed to have. If there's any trailing data before the newline or the command is not one of the commands defined below, it is invalid. Invalid commands are silently discarded.

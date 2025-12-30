@@ -20,20 +20,20 @@ class LaunchGameState(State):
         Closes the game currently running on the Switch.
         """
         self.context.program.logger.info('Entering home')
-        self.context.bot.serial.press_home()
+        self.context.bot.serial.tap_home()
         await asyncio.sleep(0.5)
         self.context.program.logger.info('Opening closing dialog')
-        self.context.bot.serial.press_x()
+        self.context.bot.serial.tap_x()
         await asyncio.sleep(0.5)
         self.context.program.logger.info('Confirming close dialog')
-        self.context.bot.serial.press_a()
+        self.context.bot.serial.tap_a()
         # closed software.
         await asyncio.sleep(2)
         self.context.program.logger.info('Launching user selection dialog')
-        self.context.bot.serial.press_a()
+        self.context.bot.serial.tap_a()
         await asyncio.sleep(2)
         self.context.program.logger.info('Selected user')
-        self.context.bot.serial.press_a()
+        self.context.bot.serial.tap_a()
         # Launched game.
         await asyncio.sleep(22.5)
 
@@ -42,8 +42,8 @@ class LaunchGameState(State):
         Skips the intro cutscene and waits until the player has loaded into the overworld.
         """
         self.context.program.logger.info('Closing intro animation')
-        self.context.bot.serial.press_a()
+        self.context.bot.serial.tap_a()
         await asyncio.sleep(5)
         self.context.program.logger.info('Closing main menu')
-        self.context.bot.serial.press_a()
+        self.context.bot.serial.tap_a()
         await asyncio.sleep(15)
