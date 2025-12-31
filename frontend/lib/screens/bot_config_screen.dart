@@ -25,7 +25,8 @@ class BotConfigScreen extends StatefulWidget {
   State<BotConfigScreen> createState() => _BotConfigScreenState();
 }
 
-class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAliveClientMixin {
+class _BotConfigScreenState extends State<BotConfigScreen>
+    with AutomaticKeepAliveClientMixin {
   late String? _currentPort = widget.currentPort;
   late List<String> _availableSerialPorts = widget.availableSerialPorts ?? [];
 
@@ -37,12 +38,17 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
     super.initState();
 
     // Register handlers for messages.
-    widget.socket.on(MessageIdentifiers.currentSerialResponse, _handleCurrentSerialPortResponse);
-    widget.socket.on(MessageIdentifiers.allSerialsResponse, _handleSerialPortsFound);
-    widget.socket.on(MessageIdentifiers.currentVideoResponse, _handleCurrentVideoResponse);
+    widget.socket.on(MessageIdentifiers.currentSerialResponse,
+        _handleCurrentSerialPortResponse);
+    widget.socket
+        .on(MessageIdentifiers.allSerialsResponse, _handleSerialPortsFound);
+    widget.socket.on(
+        MessageIdentifiers.currentVideoResponse, _handleCurrentVideoResponse);
     widget.socket.on(MessageIdentifiers.allVideoResponse, _handleVideosFound);
-    widget.socket.on(MessageIdentifiers.connectSerialResponse, _handleConnectSerialResponse);
-    widget.socket.on(MessageIdentifiers.connectVideoResponse, _handleConnectVideoResponse);
+    widget.socket.on(
+        MessageIdentifiers.connectSerialResponse, _handleConnectSerialResponse);
+    widget.socket.on(
+        MessageIdentifiers.connectVideoResponse, _handleConnectVideoResponse);
   }
 
   void _handleCurrentSerialPortResponse(dynamic data) {
@@ -73,7 +79,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
     }
 
     Map<String, dynamic>? json = data as Map<String, dynamic>?;
-    CameraDescriptor? descriptor = json == null ? null : CameraDescriptor.fromJson(json);
+    CameraDescriptor? descriptor =
+        json == null ? null : CameraDescriptor.fromJson(json);
 
     setState(() {
       _currentCamera = descriptor;
@@ -86,15 +93,17 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
     }
 
     List<Map<String, dynamic>> camerasJson = List.castFrom(data);
-    List<CameraDescriptor> descriptors =
-        camerasJson.map((descriptorJson) => CameraDescriptor.fromJson(descriptorJson)).toList();
+    List<CameraDescriptor> descriptors = camerasJson
+        .map((descriptorJson) => CameraDescriptor.fromJson(descriptorJson))
+        .toList();
     setState(() {
       _availableCameras = descriptors;
     });
   }
 
   void _handleConnectSerialResponse(dynamic data) {
-    ResultMessage message = ResultMessage.fromJson(data as Map<String, dynamic>);
+    ResultMessage message =
+        ResultMessage.fromJson(data as Map<String, dynamic>);
 
     if (!message.success) {
       // Connection failed, mark as "not connected" in UI.
@@ -108,7 +117,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
           icon: const Icon(Icons.warning),
           title: const Text('Connection to controller failed'),
           content: SingleChildScrollView(
-            child: Text('Could not connect to controller: ${message.errorMessage}'),
+            child: Text(
+                'Could not connect to controller: ${message.errorMessage}'),
           ),
         ),
       );
@@ -116,7 +126,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
   }
 
   void _handleConnectVideoResponse(dynamic data) {
-    ResultMessage message = ResultMessage.fromJson(data as Map<String, dynamic>);
+    ResultMessage message =
+        ResultMessage.fromJson(data as Map<String, dynamic>);
 
     if (!message.success) {
       // Connection failed, mark as "not connected" in selector.
@@ -130,7 +141,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
           icon: const Icon(Icons.warning),
           title: const Text('Connection to capture card failed'),
           content: SingleChildScrollView(
-            child: Text('Could not connect to capture card: ${message.errorMessage}'),
+            child: Text(
+                'Could not connect to capture card: ${message.errorMessage}'),
           ),
         ),
       );
@@ -149,7 +161,11 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
               decoration: const InputDecoration(label: Text('Serial port')),
               value: _currentPort,
               hint: const Text('No controller selected'),
-              items: _availableSerialPorts
+              // The current port always needs to be selectable in the dropdown, even if it is not available any more on the backend.
+              // So we have to insert it, even if it is technically invalid...
+              items: (_currentPort != null && !_availableSerialPorts.contains(_currentPort!)
+                      ? [..._availableSerialPorts, _currentPort!]
+                      : _availableSerialPorts)
                   .map(
                     (portName) => DropdownMenuItem(
                       value: portName,
@@ -165,7 +181,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
                 setState(() {
                   _currentPort = portName;
                   // TODO: handle response to this instead of getting the serial again afterwards.
-                  widget.socket.emit(MessageIdentifiers.connectSerialRequest, _currentPort);
+                  widget.socket.emit(
+                      MessageIdentifiers.connectSerialRequest, _currentPort);
                   widget.socket.emit(MessageIdentifiers.currentSerialRequest);
                 });
               },
@@ -219,7 +236,8 @@ class _BotConfigScreenState extends State<BotConfigScreen> with AutomaticKeepAli
 
                 setState(() {
                   _currentCamera = newDescriptor;
-                  widget.socket.emit(MessageIdentifiers.connectVideoRequest, newDescriptor.toJson());
+                  widget.socket.emit(MessageIdentifiers.connectVideoRequest,
+                      newDescriptor.toJson());
                   widget.socket.emit(MessageIdentifiers.currentVideoRequest);
                 });
               },
