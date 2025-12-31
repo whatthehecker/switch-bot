@@ -5,7 +5,7 @@
 
 class CommandExecutor {
 public:
-    CommandExecutor(SwitchJoystick_ joystick, HardwareSerial& backend);
+    CommandExecutor(SwitchJoystick_& joystick, HardwareSerial& backend);
 
     // The delay between holding down and releasing a button again when simulating a press.
     static const unsigned int PRESS_DELAY_MILLIS = 50;
@@ -13,7 +13,7 @@ public:
     bool executeCommandFromBuffer(const char* buffer);
 
 private:
-    SwitchJoystick_ joystick;
+    SwitchJoystick_& joystick;
     HardwareSerial& backend;
 
     bool doTapCommand(const char* command);

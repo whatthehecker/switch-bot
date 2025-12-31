@@ -1,11 +1,11 @@
 #include "command_executor.h"
 #include "button_constants.h"
 
-bool CommandExecutor::doTapCommand(const char* buffer)
+bool CommandExecutor::doTapCommand(const char* command)
 {
-    const bool wasHoldSuccessful = doHoldCommand(&buffer[0]);
+    const bool wasHoldSuccessful = doHoldCommand(&command[0]);
     delay(PRESS_DELAY_MILLIS);
-    const bool wasReleaseSuccessful = doReleaseCommand(&buffer[0]);
+    const bool wasReleaseSuccessful = doReleaseCommand(&command[0]);
     return wasHoldSuccessful && wasReleaseSuccessful;
 }
 
@@ -80,7 +80,8 @@ bool CommandExecutor::doHoldCommand(const char* command)
                 return false;
             }
         }
-    default: return false;
+    default:
+        return false;
     }
 }
 
@@ -221,7 +222,7 @@ void CommandExecutor::setRightStick(byte z, byte rz)
     joystick.setRzAxis(rz);
 }
 
-CommandExecutor::CommandExecutor(SwitchJoystick_ joystick, HardwareSerial& backend)
+CommandExecutor::CommandExecutor(SwitchJoystick_& joystick, HardwareSerial& backend)
     : joystick(joystick), backend(backend)
 {
     joystick.begin();

@@ -6,8 +6,10 @@ It defines commands to control which buttons are to be pressed and how other par
 Commands are sent in plain-text over serial to the controller.
 The used baud rate is 115200, the configuration is Arduino's default of 8N1.
 Commands are separated by newline characters (`\n`).
-The controller executes each command immediately when it receives a full line of text and does not send any acknowledgement (for now). This is done so that no time is wasted waiting for acknowledgement which takes too long in cases where a complex series of commands has to be executed in a quick succession (imagine rotating one of the joysticks evenly to walk a circle in a game).
-A command may only contain the data it is supposed to have. If there's any trailing data before the newline or the command is not one of the commands defined below, it is invalid. Invalid commands are silently discarded.
+The controller executes each command immediately when it receives a full line of text.
+It might send some debug diagnostics data as a response, but this is only for debugging and should not be interpreted as an acknowledgement.
+
+A command may only contain the data it is specified to contain. If there's additional data before the newline or the command is not one of the commands defined below, it is invalid and will be silently discarded.
 
 ## Command prefixes
 - T: Tap button. Holds and then shortly after releases a button again, similar to when you manually tap a button.
