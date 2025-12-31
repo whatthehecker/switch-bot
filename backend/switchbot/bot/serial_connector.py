@@ -29,7 +29,7 @@ class SerialConnector:
             timeout=1
         )
         self.port_identifier = port_identifier
-        logger.info(f'Connected to port "{self.port_identifier}.')
+        logger.info(f'Connected to port "{self.port_identifier}".')
 
     def is_connected(self) -> None:
         return self.serial is not None
@@ -153,9 +153,12 @@ class SerialConnector:
             logger.error(f'Failed to write command "{command}" to serial: {err}')
             return
 
-        logger.debug(f'Writing bytes "{command_bytes}" to port {self.port_identifier}')
+        logger.debug(f'Writing bytes "{command_bytes}" to port "{self.port_identifier}"')
         self.serial.write(command_bytes)
         self.serial.write(b'\n')
+        # Uncomment when debugging to get diagnostics data from the Pro Micro. This does slow down command sending considerably, so the joysticks may not work correctly with this.
+        #response = self.serial.readline()
+        #logger.debug(f'Response was: {response}')
 
     @staticmethod
     def list_serial_ports() -> List[str]:
