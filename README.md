@@ -10,6 +10,31 @@ Input is provided to the Switch through a "virtual" controller - an Arduino that
 
 Output is received from the switch using any compatible capture card that can capture the HDMI output of the dock.
 
+## Screenshots and images
+### UI
+<figure>
+    <img src="docs/frontend-devices.png">
+    <figcaption>Screenshot of the device config screen.</figcaption>
+</figure>
+<figure>
+    <video src="docs/frontend-controller.webm" controls autoplay>
+        Your browser does not support HTML5 videos.
+    </video>
+    <figcaption>Video of the virtual controller UI.</figcaption>
+</figure>
+
+### Hardware
+<figure>
+    <img src="docs/hardware-connection-overview.jpg">
+    <figcaption>The capture card and Pro Micro connected to a laptop and a Switch console.</figcaption>
+</figure>
+<p>
+    <figure width="50%">
+        <img src="docs/hardware-connection-switch-detail.jpg">
+        <figcaption>Detail view of the Pro Micro's connections. Note: native USB side is connected to Switch, USB-to-UART side is connected to the laptop.</figcaption>
+    </figure>
+</p>
+
 ## Structure
 This repository contains several sub-projects that make up the whole SwitchBot.
 
