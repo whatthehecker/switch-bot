@@ -17,7 +17,7 @@ Output is received from the switch using any compatible capture card that can ca
     <figcaption>Screenshot of the device config screen.</figcaption>
 </figure>
 <figure>
-    <video src="docs/frontend-controller.webm" controls autoplay>
+    <video src="https://github.com/user-attachments/assets/8891c358-590e-4eb0-bf97-ead1a023b6b4" controls autoplay>
         Your browser does not support HTML5 videos.
     </video>
     <figcaption>Video of the virtual controller UI.</figcaption>
