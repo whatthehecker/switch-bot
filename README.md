@@ -20,14 +20,12 @@ The project is split into three parts:
 
 ## Requirements
 - For the controller:
-    - The Arduino IDE (this project was built using version 1 of the IDE, so the instructions might not apply to Arduino IDE 2)
+    - Arduino IDE (v1 or v2 should both work fine)
     - At least one ATmega32u4-based Arduino (or Arduino-like) microcontroller
     - Some very basic electronics knowledge
     - Some jumper cables and a breadboard
-    - Either:
-        - 1 USB cable for the Arduino and 1 USB-UART cable (if using a single Arduino)
-        - 2 USB cables for the Arduinos (if using two Arduinos)
-    - (Optional: a push button and two red LEDs)
+    - 1 Micro-USB cable 
+    - 1 USB-to-UART cable
 - For the backend:
     - A computer running a Python version compatible with the used dependencies
 - For the frontend:
@@ -37,16 +35,16 @@ The project is split into three parts:
 
 ## Setup
 1. Controller:
-    1. Build the hardware. Use the [instructions](controller/readme.md) in the `controller` directory. You can choose either of the two variants, both work the same.
-    2. Add the SwitchJoystick library to your Arduino IDE by following the instructions in its [readme](https://github.com/HackerLoop/Arduino-JoyCon-Library-for-Nintendo-Switch/blob/master/README.md). You might have to edit both `boards.txt` in the Arduino IDE install directory as well as in your user's `Arduino15` directory (`%localAppData%\Arduino15` on Windows).
-    3. Upload the code to the Arduino(s). If using the `controller_proxy` version, you'll have to upload `proxy.ino` to the Arduino that you want to connect to your computer (make sure to choose the correct board type under `Tools/Board`). Upload `controller.ino` to the other Arduino, but choose `SwitchJoystick` as the board type this time.
+    1. Build the hardware. Use the [instructions](controller/README.md) in the `controller` directory.
+    2. Follow the install instructions at [https://github.com/squirelo/Arduino-JoyCon-Library-for-Nintendo-Switch](https://github.com/squirelo/Arduino-JoyCon-Library-for-Nintendo-Switch). If using Arduino IDE v2, you will need to add another line with `myboard.bootloader.tool.default=avrdude` to `boards.txt`.
+    3. Open, build and upload the code to the microcontroller. **Important**: connect to the native USB port of the microcontroller to upload, *not* the UART-to-USB side.
 2. Backend:
     1. Open a shell in the `backend` directory.
-    2. (Optional, but recommended: use `virtualenv venv` to create a virtual environment to install the dependencies in.)
+    2. (Optional, but recommended: use `python -m virtualenv .venv` and the OS-specific commands to enable the virtual environment.)
     3. Install the dependencies by running `pip install -r requirements.txt`
 3. Frontend:
-    1. Open the `frontend` directory in your IDE of choice.
-    2. Run the project on a device of your choice (this currently includes web and Android).
+    1. Open the `frontend` directory in a Flutter-supported IDE of your choice (I use IntelliJ).
+    2. Run the project on a device (currently supported are Windows, Linux and Android).
 
 ## Running
 1. Start the backend by running `python main.py` in the `backend` directory. If using a `virtualenv`, activate the environment first.

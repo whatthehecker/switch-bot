@@ -80,4 +80,6 @@ fabric.properties
 build/
 .flutter-plugins
 .flutter-plugins-dependencies
+# Generated Dart code:
 **/*.g.dart
+**/*.mocks.dart

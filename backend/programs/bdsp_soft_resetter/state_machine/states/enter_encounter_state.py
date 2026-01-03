@@ -1,8 +1,9 @@
 from typing import Optional
 
-from ...battle_entry import BattleEntryDelegate, BattleEntry
+from ...battle_entry import BattleEntryDelegate
 from ..state_machine import State
 from .wait_for_menu_state import MeasureTimeState
+from ...battle_entry_presets import PRESET_BATTLE_ENTRIES
 
 
 class EnterEncounterState(State):

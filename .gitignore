@@ -1,0 +1,4 @@
+# Ignore all kinds of IDE-specific directories, they don't belong in version control anyways:
+.idea/
+.vscode/
+.pio/
